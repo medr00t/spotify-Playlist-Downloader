@@ -8,14 +8,16 @@ import java.io.InputStreamReader;
 public class YouTubeDownloader {
 
     private String ytDlpPath;
+    private String ffmpegPath;
 
-    public YouTubeDownloader(String ytDlpPath) {
+    public YouTubeDownloader(String ytDlpPath, String ffmpegPath) {
         this.ytDlpPath = ytDlpPath;
+        this.ffmpegPath = ffmpegPath;
     }
 
     public void downloadVideo(String videoUrl, String path) throws IOException, InterruptedException {
         try {
-            String[] command = {ytDlpPath, "-x", "--audio-format", "mp3", "--audio-quality", "0", videoUrl};
+            String[] command = {ytDlpPath, "-x", "--audio-format", "mp3", "--audio-quality", "0", "--ffmpeg-location", ffmpegPath, videoUrl};
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.directory(new File(path));

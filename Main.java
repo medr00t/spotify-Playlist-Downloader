@@ -29,24 +29,27 @@ public class Main {
                 String playlistUrl = playlistUrlTextField.getText();
                 String path = pathTextField.getText();
                 SpotifyPlaylistReader spotifyReader = new SpotifyPlaylistReader();
-                List<String> trackNames = spotifyReader.getPlaylistTracks(playlistUrl);
+                List<SpotifyPlaylistReader.TrackInfo> trackInfoList = spotifyReader.getPlaylistTracks(playlistUrl);
                 YoutubeTrackData youtubeData = new YoutubeTrackData();
                 String ytDlpPath = "yt-dlp.exe";
-                YouTubeDownloader youTubeDownloader = new YouTubeDownloader(ytDlpPath);
+                String ffmpegPath = "C:\\Program Files\\ffmpeg-6.1.1-full_build\\bin\\ffmpeg.exe"; // Replace with the actual path
 
-                for (String trackName : trackNames) {
-                    String searchQuery = trackName + " official music video";
+                YouTubeDownloader youTubeDownloader = new YouTubeDownloader(ytDlpPath, ffmpegPath);
+
+                for (SpotifyPlaylistReader.TrackInfo trackInfo : trackInfoList) {
+                    String searchQuery = trackInfo.getTrackName() + " " + trackInfo.getArtistName() + " official music video";
+
                     try {
                         String videoUrl = youtubeData.getYoutubeVideoUrl(searchQuery);
                         if (!videoUrl.isEmpty()) {
                             try {
                                 youTubeDownloader.downloadVideo(videoUrl, path);
                             } catch (IOException | InterruptedException ex) {
-                                throw new RuntimeException(ex);
+                                ex.printStackTrace();
                             }
                             System.out.println("Downloaded!");
                         } else {
-                            System.out.println("No YouTube video found for track: " + trackName);
+                            System.out.println("No YouTube video found for track: " + trackInfo);
                         }
                     } catch (VideoNotFoundException ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage());

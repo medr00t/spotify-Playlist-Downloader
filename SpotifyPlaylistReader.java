@@ -11,15 +11,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Base64;
+import java.util.List;
 
 public class SpotifyPlaylistReader {
 
     private String clientId = "2f46e974b82140d3ae2d47a661cd0e43";
     private String clientSecret = "87b0a36d22344057986b97528a31e575";
 
-    public List<String> getPlaylistTracks(String playlistUrl) {
+    public List<TrackInfo> getPlaylistTracks(String playlistUrl) {
 
         String playlistId = extractPlaylistId(playlistUrl);
         String accessToken = getAccessToken(clientId, clientSecret);
@@ -32,8 +32,8 @@ public class SpotifyPlaylistReader {
         return new ArrayList<>(); // Return an empty list in case of failure
     }
 
-    private List<String> getAllPlaylistTracks(String accessToken, String playlistId) {
-        List<String> trackNames = new ArrayList<>();
+    private List<TrackInfo> getAllPlaylistTracks(String accessToken, String playlistId) {
+        List<TrackInfo> trackInfoList = new ArrayList<>();
         String playlistEndpoint = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
 
         int limit = 100;
@@ -61,8 +61,14 @@ public class SpotifyPlaylistReader {
                 }
 
                 for (JsonElement item : items) {
-                    JsonObject track = item.getAsJsonObject().getAsJsonObject("track");
-                    trackNames.add(track.get("name").getAsString());
+                    JsonObject trackObject = item.getAsJsonObject().getAsJsonObject("track");
+                    String trackName = trackObject.get("name").getAsString();
+                    JsonArray artists = trackObject.getAsJsonArray("artists");
+
+                    // Assuming there is only one artist for simplicity
+                    String artistName = artists.get(0).getAsJsonObject().get("name").getAsString();
+
+                    trackInfoList.add(new TrackInfo(trackName, artistName));
                 }
 
                 offset += limit;
@@ -70,7 +76,7 @@ public class SpotifyPlaylistReader {
         } catch (IOException e) {
             System.err.println("Error while fetching playlist tracks: " + e.getMessage());
         }
-        return trackNames;
+        return trackInfoList;
     }
 
     private String extractPlaylistId(String playlistUrl) {
@@ -112,5 +118,24 @@ public class SpotifyPlaylistReader {
         }
 
         return null;
+    }
+
+    // Define a class to hold track information
+    protected static class TrackInfo {
+        private String trackName;
+        private String artistName;
+
+        public TrackInfo(String trackName, String artistName) {
+            this.trackName = trackName;
+            this.artistName = artistName;
+        }
+
+        public String getTrackName() {
+            return trackName;
+        }
+
+        public String getArtistName() {
+            return artistName;
+        }
     }
 }
