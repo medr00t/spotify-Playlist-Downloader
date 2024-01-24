@@ -2,6 +2,9 @@ This project is using the api "spotify & youtube v3 " to get the name of the ite
 
 but before that us need to install 'yt-dlp.exe' using `pip install yt-dlp` require python and pip installed !!!
 
+########################################
+Additional to convert the files from .webm to .mp3 
 
+      then when all files are downloaded u need to update the python file 'path name of : input folder / output folder / and the ffmpeg.exe that exist in the .zip file `path/to/bin/.../.fmpeg.exe` 
 
-The api keys are personel and limited try using your own ones ! enjoy !!
+`The api keys are personel and limited try using your own ones ! enjoy !!`
