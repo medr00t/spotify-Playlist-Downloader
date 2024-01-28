@@ -17,7 +17,7 @@ public class YoutubeTrackData {
 
     };
 
-    private int currentApiKeyIndex = 2;
+    private int currentApiKeyIndex = 0;
 
     public String getYoutubeVideoUrl(String searchQuery) throws VideoNotFoundException {
         try {
