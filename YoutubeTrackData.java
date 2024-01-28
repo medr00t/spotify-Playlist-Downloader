@@ -5,26 +5,31 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class YoutubeTrackData {
+    private String[] apiKeys = {
+            "AIzaSyD9rduF7I1iagWeHxvU6KCbKZRZmbahk20",
+            "AIzaSyCeSwfvaDgjr0S9iYHmGuYZlSpFtjIRAvw",
+            "AIzaSyAb9Fri4or0rs2fzCrTAYBY5500W-_Ohxk"
 
-//    private String apiKey = "AIzaSyASj8NTbJQ_kupb2ogSqbzIe2kusP5vNmI";
+    };
 
-//    private String apiKey = "AIzaSyAb9Fri4or0rs2fzCrTAYBY5500W-_Ohxk";
-    private String apiKey = "AIzaSyD9rduF7I1iagWeHxvU6KCbKZRZmbahk20";
+    private int currentApiKeyIndex = 2;
 
     public String getYoutubeVideoUrl(String searchQuery) throws VideoNotFoundException {
         try {
+            String apiKey = apiKeys[currentApiKeyIndex];
+
             URL url = new URL("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q="
                     + searchQuery.replace(" ", "+") + "&type=video&key=" + apiKey);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
             int responseCode = conn.getResponseCode();
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder response = new StringBuilder();
@@ -46,13 +51,26 @@ public class YoutubeTrackData {
                 } else {
                     throw new VideoNotFoundException("No videos found for the search query: " + searchQuery);
                 }
+            } else if (responseCode == HttpURLConnection.HTTP_FORBIDDEN && currentApiKeyIndex < apiKeys.length - 1) {
+                currentApiKeyIndex++;
+                return getYoutubeVideoUrl(searchQuery);
             } else {
                 System.out.println("Error - HTTP response code: " + responseCode);
             }
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
-
         return "";
     }
 }
+
+
+
+
+
+
+
+
+//    private String apiKey = "AIzaSyASj8NTbJQ_kupb2ogSqbzIe2kusP5vNmI";
+//    private String apiKey = "AIzaSyAb9Fri4or0rs2fzCrTAYBY5500W-_Ohxk";
+//    private String apiKey = "AIzaSyD9rduF7I1iagWeHxvU6KCbKZRZmbahk20";
