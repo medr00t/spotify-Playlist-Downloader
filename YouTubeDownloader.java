@@ -15,9 +15,11 @@ public class YouTubeDownloader {
         this.ffmpegPath = ffmpegPath;
     }
 
-    public void downloadVideo(String videoUrl, String path) throws IOException, InterruptedException {
+    public void downloadVideo(String videoUrl, String path, String trackName, String artistName) throws IOException, InterruptedException {
         try {
-            String[] command = {ytDlpPath, "-x", "--audio-format", "mp3", "--audio-quality", "0", "--ffmpeg-location", ffmpegPath, videoUrl};
+            // Updated command to include desired file name pattern
+            String[] command = {ytDlpPath, "-x", "--audio-format", "mp3", "--audio-quality", "0", "--ffmpeg-location", ffmpegPath, "--output",
+                    path + File.separator + trackName + " - " + artistName + ".%(ext)s", videoUrl};
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.directory(new File(path));
@@ -48,4 +50,5 @@ public class YouTubeDownloader {
             throw e;
         }
     }
+
 }

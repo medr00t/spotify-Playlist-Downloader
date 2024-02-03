@@ -3,7 +3,9 @@ package com.ocpjava;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -36,31 +38,49 @@ public class Main {
 
                 YouTubeDownloader youTubeDownloader = new YouTubeDownloader(ytDlpPath, ffmpegPath);
 
-                for (SpotifyPlaylistReader.TrackInfo trackInfo : trackInfoList) {
-                    String searchQuery = trackInfo.getTrackName() + " " + trackInfo.getArtistName() + " official music video";
+                // Existing files in the specified path
+                File folder = new File(path);
+                File[] existingFiles = folder.listFiles();
 
-                    try {
-                        String videoUrl = youtubeData.getYoutubeVideoUrl(searchQuery);
-                        if (!videoUrl.isEmpty()) {
-                            try {
-                                youTubeDownloader.downloadVideo(videoUrl, path);
-                            } catch (IOException | InterruptedException ex) {
-                                ex.printStackTrace();
-                            }
-                            System.out.println("Downloaded!");
-                        } else {
-                            System.out.println("No YouTube video found for track: " + trackInfo);
+                // Check if the existingFiles array is not null to avoid potential issues
+                if (existingFiles != null) {
+                    List<String> existingTrackNames = extractExistingTrackNames(existingFiles);
+
+                    for (SpotifyPlaylistReader.TrackInfo trackInfo : trackInfoList) {
+                        String trackName = trackInfo.getTrackName();
+
+                        // Check if track already exists in the folder
+                        if (existingTrackNames.contains(trackName)) {
+                            System.out.println("Track already exists: " + trackInfo);
+                            continue;  // Skip downloading if track already exists
                         }
-                    } catch (VideoNotFoundException ex) {
-                        JOptionPane.showMessageDialog(frame, ex.getMessage());
+
+                        String searchQuery = trackName + " " + trackInfo.getArtistName() + " official music video";
+
+                        try {
+                            String videoUrl = youtubeData.getYoutubeVideoUrl(searchQuery);
+                            if (!videoUrl.isEmpty()) {
+                                try {
+                                    // Updated call to include desired file name pattern
+                                    youTubeDownloader.downloadVideo(videoUrl, path, trackName, trackInfo.getArtistName());
+                                    System.out.println("Downloaded!");
+                                } catch (IOException | InterruptedException ex) {
+                                    ex.printStackTrace();
+                                }
+                            } else {
+                                System.out.println("No YouTube video found for track: " + trackInfo);
+                            }
+                        } catch (VideoNotFoundException ex) {
+                            JOptionPane.showMessageDialog(frame, ex.getMessage());
+                        }
                     }
+                } else {
+                    System.out.println("Error: Unable to retrieve existing files in the specified path.");
                 }
 
-                // Terminate the application
                 System.exit(0);
             });
 
-            // Add a window listener to force exit
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -75,5 +95,32 @@ public class Main {
 
             frame.setVisible(true);
         });
+    }
+
+    private static List<String> extractExistingTrackNames(File[] existingFiles) {
+        List<String> existingTrackNames = new ArrayList<>();
+        for (File file : existingFiles) {
+            if (file.isFile()) {
+                String fileName = file.getName();
+                String trackNameFromFileName = extractTrackName(fileName);
+
+                if (trackNameFromFileName != null) {
+                    existingTrackNames.add(trackNameFromFileName);
+                }
+            }
+        }
+        return existingTrackNames;
+    }
+
+    private static String extractTrackName(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+            String potentialTrackName = fileName.substring(0, lastDotIndex);
+            String[] parts = potentialTrackName.split(" - ");
+            if (parts.length >= 1) {
+                return parts[0];
+            }
+        }
+        return null;
     }
 }
