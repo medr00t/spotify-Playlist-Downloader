@@ -16,8 +16,8 @@ import java.util.List;
 
 public class SpotifyPlaylistReader {
 
-    private String clientId = "2f46e974b82140d3ae2d47a661cd0e43";
-    private String clientSecret = "87b0a36d22344057986b97528a31e575";
+    private String clientId = ""; // ur token here
+    private String clientSecret = ""; //ur token here
 
     public List<TrackInfo> getPlaylistTracks(String playlistUrl) {
 
